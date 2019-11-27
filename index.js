@@ -4,6 +4,10 @@ const bodyParser = require('body-parser')
 
 app.use(bodyParser.json())
 
+const cors = require('cors')
+app.use(cors())
+
+
 let points = [
     {
         id: 1,
