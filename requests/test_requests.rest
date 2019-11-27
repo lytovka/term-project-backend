@@ -1,0 +1,12 @@
+get http://localhost:3001/points
+
+###
+
+post http://localhost:3001/points
+Content-Type: application/json
+
+{
+    "type": "red",
+    "longitude": "53",
+    "latitude": "22"
+}
