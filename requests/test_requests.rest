@@ -1,12 +1,17 @@
-get http://localhost:3001/points
+get http://localhost:3001/api/points
 
 ###
 
-post http://localhost:3001/points
+POST http://localhost:3001/api/points
 Content-Type: application/json
 
 {
-    "type": "red",
-    "longitude": "53",
-    "latitude": "22"
+    "type": "event",
+    "content": "Battle rap",
+    "longitude": -79.380520,
+    "latitude": 43.658487
 }
+
+###
+
+get http://localhost:3001/api/points/5de034adc665846030b938fa

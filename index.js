@@ -1,6 +1,10 @@
+require('dotenv').config()
+const mongoose = require('mongoose')
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
+
+const Point = require("./models/point")
 
 app.use(bodyParser.json())
 
@@ -8,74 +12,75 @@ const cors = require('cors')
 app.use(cors())
 
 
-let points = [
-    {
-        id: 1,
-        type: "green",
-        longitute: "73",
-        latitude: "43"
-    },
-    {
-        id: 2,
-        type: "red",
-        longitute: "22",
-        latitude: "34"
-    }
-]
+// let points = [
+//     {
+//         id: 1,
+//         type: "green",
+//         content: "Nice guitarist playing",
+//         longitute: "73",
+//         latitude: "43"
+//     },
+//     {
+//         id: 2,
+//         type: "red",
+//         content: "Street fight",
+//         longitute: "22",
+//         latitude: "34"
+//     }
+// ]
 
 app.get('/', (req, res) => {
     res.send('<h1>Hop hey la la ley</h1>')
 })
 
-app.get('/points', (req, res) => {
-    res.json(points)
+app.get('/api/points', (request, response) => {
+    Point.find({}).then(points => {
+        response.json(points.map(point => {
+            return point.toJSON();
+        }));
+    })
 })
 
-app.get('/points/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const point = points.find(point => point.id === id)
-    if (point) {
-        response.json(point);
-    }
-    response.status(404).end();
-})
+app.get("/api/points/:id", (request, response) => {
+    Point.findById(request.params.id).then(point => {
+        if (point) {
+            response.json(point.toJSON());
+        }
+        else {
+            response.status(404).end();
+        }
+    })
+});
 
-const generateId = () => {
-    const maxId = points.length > 0
-        ? Math.max(...points.map(n => n.id))
-        : 0
-    return maxId + 1
-}
+app.post('/api/points', (request, response) => {
+    const body = request.body
 
-app.post('/points', (request, response) => {
-    const body = request.body;
-
-    if (!(body.type) && !(body.latitude) && !(body.longitude)) {
-        return response.status(400).json({
-            error: "missing content"
-        })
+    if (!body.type || !body.content || !body.longitude || !body.latitude) {
+        return response.status(400).json({ error: 'info missing' })
     }
 
-    const point = {
+    const point = new Point({
         type: body.type,
+        content: body.content,
         longitude: body.longitude,
-        latitude: body.latitude,
-        date: new Date(),
-        id: generateId(),
-    }
+        latitude: body.latitude
+    })
 
-    points = points.concat(point);
-    response.json(point);
+    console.log('point after pulling', point);
 
+    point.save().then(savedPoint => savedPoint.toJSON()).then(savedAndFormattedPoint => {
+        console.log('point', savedAndFormattedPoint)
+        response.json(savedAndFormattedPoint);
+    })
 })
 
 const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
-  }
-  
-  app.use(unknownEndpoint)
+}
 
-const PORT = 3001
+app.use(unknownEndpoint)
+
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
